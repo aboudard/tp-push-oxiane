@@ -21,6 +21,7 @@ public class GcmIntentService extends IntentService {
     public static final String NOTIF_RECEIVED = "ACTIVITY_NOTIF_RECEIVED";
 	public static final int     NOTIFICATION_ID = 1;
     private static final String TAG             = "test";
+	public static final String MESSAGE_RECU_IN_APP_RECEIVER = "in_app";
     private NotificationManager mNotificationManager;
     NotificationCompat.Builder  builder;
 
@@ -58,7 +59,7 @@ public class GcmIntentService extends IntentService {
                 
                 if(extras.getString("Notice") != null)
                 {
-	                sendNotification(extras.getString("Notice"));
+	                sendNotification(extras.getString("Notice"), extras.getString("From"));
                 }
             }
         }
@@ -67,7 +68,7 @@ public class GcmIntentService extends IntentService {
         }
     }
 
-    private void sendNotification(String message) {
+    private void sendNotification(String message, String from) {
     	
     	mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -81,7 +82,7 @@ public class GcmIntentService extends IntentService {
 		NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
 				.setAutoCancel(true)
                 .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle("Ma notif")
+                .setContentTitle("Nouveau message de "+from)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
                 .setVibrate(pattern)
                 .setLights(0xFFFF00FF, 100, 3000)
@@ -91,17 +92,16 @@ public class GcmIntentService extends IntentService {
         mBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
         
-//        updateMyActivityWithChantier(getApplicationContext());
+        updateMyActivityWithMessage(getApplicationContext(), from, message);
 	}
     
    
 
-	private void updateMyActivityWithChantier(Context context) {
-		Intent intent = new Intent(NOTIF_RECEIVED);
+	private void updateMyActivityWithMessage(Context context, String from, String message) {
+		Intent intent = new Intent(MESSAGE_RECU_IN_APP_RECEIVER);
+		intent.putExtra("from", from);
+		intent.putExtra("message", message);
 
-        //put whatever data you want to send, if any
-
-        //send broadcast
         context.sendBroadcast(intent);
 	}
 	

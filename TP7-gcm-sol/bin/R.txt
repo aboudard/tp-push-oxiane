@@ -284,6 +284,8 @@ int drawable ic_plusone_medium_off_client 0x7f020070
 int drawable ic_plusone_small_off_client 0x7f020071
 int drawable ic_plusone_standard_off_client 0x7f020072
 int drawable ic_plusone_tall_off_client 0x7f020073
+int id LinearLayout1 0x7f060042
+int id RelativeLayout1 0x7f060041
 int id action_bar 0x7f06001f
 int id action_bar_activity_content 0x7f060018
 int id action_bar_container 0x7f06001e
@@ -295,10 +297,11 @@ int id action_context_bar 0x7f060020
 int id action_menu_divider 0x7f060019
 int id action_menu_presenter 0x7f06001a
 int id action_mode_close_button 0x7f060027
-int id action_settings 0x7f060040
+int id action_settings 0x7f060048
 int id activity_chooser_view_content 0x7f060028
 int id always 0x7f06000f
 int id beginning 0x7f060014
+int id btn_send 0x7f060044
 int id checkbox 0x7f060030
 int id collapseActionView 0x7f060011
 int id default_activity_button 0x7f06002b
@@ -306,6 +309,7 @@ int id dialog 0x7f060012
 int id disableHome 0x7f06000c
 int id dropdown 0x7f060013
 int id edit_query 0x7f060033
+int id edt 0x7f060043
 int id end 0x7f060016
 int id expand_activities_button 0x7f060029
 int id expanded_menu 0x7f06002f
@@ -315,6 +319,8 @@ int id hybrid 0x7f060004
 int id icon 0x7f06002d
 int id ifRoom 0x7f06000e
 int id image 0x7f06002a
+int id list 0x7f060040
+int id listConv 0x7f060045
 int id listMode 0x7f060005
 int id list_item 0x7f06002c
 int id middle 0x7f060015
@@ -346,6 +352,8 @@ int id terrain 0x7f060003
 int id text 0x7f06003f
 int id title 0x7f06002e
 int id top_action_bar 0x7f060023
+int id tv 0x7f060046
+int id txt_date 0x7f060047
 int id up 0x7f060024
 int id useLogo 0x7f060007
 int id withText 0x7f060010
@@ -375,7 +383,10 @@ int layout abc_popup_menu_item_layout 0x7f030014
 int layout abc_search_dropdown_item_icons_2line 0x7f030015
 int layout abc_search_view 0x7f030016
 int layout activity_main 0x7f030017
-int layout support_simple_spinner_dropdown_item 0x7f030018
+int layout conversation 0x7f030018
+int layout message_envoye_item 0x7f030019
+int layout message_recu_item 0x7f03001a
+int layout support_simple_spinner_dropdown_item 0x7f03001b
 int menu main 0x7f0c0000
 int string abc_action_bar_home_description 0x7f07001c
 int string abc_action_bar_up_description 0x7f07001d
@@ -418,6 +429,7 @@ int string common_google_play_services_update_text 0x7f070008
 int string common_google_play_services_update_title 0x7f070007
 int string common_signin_button_text 0x7f070012
 int string common_signin_button_text_long 0x7f070013
+int string comptes 0x7f07002c
 int string hello_world 0x7f070029
 int string location_client_powered_by_google 0x7f07001a
 int string projectid 0x7f07002b

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.oxiane.tp_gcm"
-    android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionCode="5"
+    android:versionName="0.3" >
 
     <uses-sdk
         android:minSdkVersion="14"
@@ -13,7 +13,10 @@
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- USE_CREDENTIALS is necessary for Google+ login -->
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
 
     <permission
         android:name="com.example.gcm.permission.C2D_MESSAGE"
@@ -27,6 +30,7 @@
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
@@ -39,6 +43,7 @@
         <activity
             android:name=".ConversationActivity"
             android:label="@string/app_name" />
+
         <receiver
             android:name="com.oxiane.tp_gcm.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
@@ -50,6 +55,22 @@
         </receiver>
 
         <service android:name="com.oxiane.tp_gcm.GcmIntentService" />
+
+        <activity
+            android:name="com.oxiane.tp_gcm.auth.sample.helloauth.MainActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity android:name="com.oxiane.tp_gcm.auth.sample.helloauth.HelloActivity" >
+        </activity>
+
+        <receiver
+            android:name="com.oxiane.tp_gcm.auth.sample.helloauth.GetNameInBackground$CallbackReceiver"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="com.google.android.gms.auth.sample.helloauth.Callback" >
+                </action>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

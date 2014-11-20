@@ -4,9 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
+import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -16,11 +22,13 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -42,23 +50,40 @@ public class MainActivity extends Activity {
 	private String regid;
 	private GoogleCloudMessaging gcm;
 	private TextView mDisplay;
-	private String account;
+	private String accountName;
+	private Account account;
+	public String authToken;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		mDisplay = (TextView) findViewById(R.id.text);
-		final ListView lv = (ListView)findViewById(R.id.list);
-		account = getSharedPreferences(MainActivity.class.getSimpleName(), Context.MODE_PRIVATE).getString("account", null);
-		if(account == null){
+		accountName = getSharedPreferences(MainActivity.class.getSimpleName(), Context.MODE_PRIVATE).getString("account", null);
+		if(accountName == null){
 			showAccount();
 		}
 		else
 		{
-			setTitle(account);
+			setTitle(accountName);
 		}
 		
+		if(account == null && accountName !=null)
+		{
+			AccountManager accountManager= AccountManager.get(this);
+	        for (Account a : accountManager.getAccounts())
+	        {
+	        	if(a.name.contains(accountName))
+	        	{
+	        		Log.d("toto", "acc: "+a.name+ " "+a.type);
+	        		this.account = a;
+	        		accountManager.getAuthToken(a, SCOPES, null, true, new OxAccManagerCallBack(), null);
+	        		break;
+	        	}
+	        }
+		}
+	}
+	public void initGcm() {
 
 		gcm = GoogleCloudMessaging.getInstance(this);
 		regid = getRegistrationId(MainActivity.this);
@@ -69,6 +94,12 @@ public class MainActivity extends Activity {
 			mDisplay.setText(mDisplay.getText()
 					+ " Device already registered. Deviceid = " + regid);
 		}
+		showList();
+	}
+	private void showList() {
+		final ListView lv = (ListView)findViewById(R.id.list);
+		if(lv!=null)
+		{
 		lv.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -77,9 +108,21 @@ public class MainActivity extends Activity {
 				Intent i = new Intent(MainActivity.this, ConversationActivity.class);
 				i.putExtra("withName", p.getNom());
 				i.putExtra("withID", p.getRegId());
-				i.putExtra("account", account);
+				i.putExtra("account", accountName);
 				startActivity(i);
 				
+			}
+		});
+		lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+					int arg2, long arg3) {
+				Personne p = (Personne) arg0.getAdapter().getItem(arg2);
+				Intent i = new Intent(Intent.ACTION_SENDTO);
+				i.putExtra(Intent.EXTRA_EMAIL, p.getNom());
+				startActivity(i);
+				return false;
 			}
 		});
 		new AsyncTask<Void, Void, ArrayList<Personne>>(){
@@ -89,7 +132,7 @@ public class MainActivity extends Activity {
 				//http://oxiane.com/google-push/list.php
 				ArrayList<Personne> personnes = new ArrayList<Personne>();
 				try {
-					String res = Utils.executeHttpGet("http://oxiane.com/google-push/list.php");
+					String res = Utils.executeHttpGet(BASE_URL+"/list.php?regid="+regid);
 					StringReader sr = new StringReader(res);
 					BufferedReader br = new BufferedReader(sr);
 				    String line = "";
@@ -102,8 +145,34 @@ public class MainActivity extends Activity {
 				    		  int indexOf = tmp.indexOf("||");
 				    		  if(indexOf> -1)
 				    		  {
-				    			  Personne p = new Personne(tmp.substring(0, indexOf), tmp.substring(indexOf+2));
-				    			  personnes.add(p);
+				    			  
+				    			  String nom = tmp.substring(0, indexOf);
+				    			  if(!nom.equalsIgnoreCase(accountName))
+				    			  {
+					    			  String s = tmp.substring(indexOf+2);
+					    			  indexOf = s.indexOf("||");
+					    			  Personne p;
+					    			  if(indexOf > -1)
+					    			  {
+					    				  Date d = new SimpleDateFormat("", Locale.FRANCE).parse(s.substring(indexOf+2));
+					    				  p = new Personne(nom, s);
+					    				  p.setLastOnline(d);
+					    			  }
+					    			  else
+					    				  p = new Personne(nom, s);
+					    			  
+					    			  boolean isAlreadyAdded = false;
+					    			  for(Personne tmpPersonne : personnes)
+					    			  {
+					    				  if(tmpPersonne.getNom().equals(nom))
+					    				  {
+					    					  isAlreadyAdded = true;
+					    					  break;
+					    				  }
+					    			  }
+					    			  if(!isAlreadyAdded)
+					    				  personnes.add(p);
+				    			  }
 				    		  }
 				    	  }
 				    	}
@@ -130,6 +199,8 @@ public class MainActivity extends Activity {
 							
 							tv.setText(getItem(arg0).getNom());
 							
+							tv.setCompoundDrawablesWithIntrinsicBounds(getItem(arg0).getOnlineDrawable(), 0, 0, 0);
+							
 							return tv;
 						}
 						
@@ -151,33 +222,69 @@ public class MainActivity extends Activity {
 				}
 			}
 			}.execute(new Void[]{});
+		}
 	}
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if(requestCode == CHOOSE_ACCOUNT)
 		{
-			account = data.getExtras().getString("authAccount");
+			if(!data.getExtras().getString("authAccount").contains("@oxiane.com"))
+			{
+				Toast.makeText(MainActivity.this, "Vous devez sélectionner un compte Google @oxiane.com", Toast.LENGTH_SHORT).show();
+				showAccount();
+				return;
+			}
+			accountName = data.getExtras().getString("authAccount");
 			
 			final SharedPreferences prefs = getSharedPreferences(MainActivity.class.getSimpleName(), Context.MODE_PRIVATE);
-			prefs.edit().putString("account", account).commit();
-			setTitle(account);
-			new AsyncTask<Void, Void, Void>() {
-
-				@Override
-				protected Void doInBackground(Void... params) {
-
-					try {
-						sendRegistrationIdToBackend();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					return null;
-				}
-			}.execute(new Void[]{});
+			prefs.edit().putString("account", accountName).commit();
+			setTitle(accountName);
+			
+			AccountManager accountManager= AccountManager.get(this);
+	        for (Account a : accountManager.getAccounts())
+	        {
+	        	if(a.name.contains(accountName))
+	        	{
+	        		Log.d("toto", "acc: "+a.name+ " "+a.type);
+	        		this.account = a;
+	        		accountManager.getAuthToken(a, SCOPES, null, true, new OxAccManagerCallBack(), null);
+	        		break;
+	        	}
+	        }
 		}
 	}
+	private final class OxAccManagerCallBack implements
+			AccountManagerCallback<Bundle> {
+		public void run(AccountManagerFuture<Bundle> future) {
 
+		    try {
+		        Bundle bundle = future.getResult();
+
+		        //bundle.getString(AccountManager.KEY_ACCOUNT_NAME);
+		        //bundle.getString(AccountManager.KEY_ACCOUNT_TYPE);
+
+		        authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
+		        
+		        getPreferences(Activity.MODE_PRIVATE).edit().putString("token", authToken).commit();
+
+		    } catch (Exception e) {
+		        System.out.println("getAuthTokenByFeatures() cancelled or failed:");
+		        e.printStackTrace();
+		        authToken = "failure";
+		    }
+
+		    if(!authToken.equals("failure")) {
+
+		        new GetProfileDataTask().execute(authToken);
+		        
+		        new GetWikiFeedTask().execute(authToken);
+		        
+		        initGcm();
+		    }
+		}
+	}
+	private final String SCOPES = "oauth2:https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://sites.google.com/feeds/";
+	
 	public void showAccount()
 	{
 		Intent intent = AccountManager.newChooseAccountIntent(null, null,
@@ -210,6 +317,23 @@ public class MainActivity extends Activity {
 			@Override
 			protected void onPostExecute(String msg) {
 				mDisplay.append(msg + "\n");
+				
+				new AsyncTask<Void, Void, Void>() {
+
+					@Override
+					protected Void doInBackground(Void... params) {
+
+						try {
+							sendRegistrationIdToBackend();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						return null;
+					}
+					protected void onPostExecute(Void result) {
+						showList();
+					};
+				}.execute(new Void[]{});
 			}
 		}.execute(null, null, null);
 	}
@@ -228,9 +352,8 @@ public class MainActivity extends Activity {
 	protected void sendRegistrationIdToBackend() throws Exception {
 		String manufacturer = Build.MANUFACTURER;
 		String deviceName = Build.MODEL;
-		String nom = URLEncoder.encode(account+"_"+manufacturer + deviceName);
 		final String res = Utils.executeHttpGet(BASE_URL + "/register.php?id="
-				+ regid + "&nom=" + nom);
+				+ regid + "&nom=" + accountName+"&device="+URLEncoder.encode(manufacturer + deviceName));
 		MainActivity.this.runOnUiThread(new Runnable() {
 
 			@Override

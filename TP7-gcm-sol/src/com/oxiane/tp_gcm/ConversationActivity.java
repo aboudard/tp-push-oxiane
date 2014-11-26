@@ -101,12 +101,14 @@ public class ConversationActivity extends Activity {
 	};
 
 
-	private String account;	@Override
+	private String account;
+	private String myRegId;	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		final String withNom = getIntent().getStringExtra("withName");
 		final String withId = getIntent().getStringExtra("withID");
 		account = getIntent().getStringExtra("account");
+		myRegId = getIntent().getStringExtra("regid");
 		setTitle(withNom);
 		setContentView(R.layout.conversation);
 		
@@ -123,7 +125,7 @@ public class ConversationActivity extends Activity {
 
 					@Override
 					protected String doInBackground(Void... params) {
-						return Utils.sendMessage(sendText.getText().toString(), account, withId);
+						return Utils.sendMessage(sendText.getText().toString(), myRegId, withId);
 					}
 					@Override
 					protected void onPostExecute(String result) {
@@ -131,6 +133,7 @@ public class ConversationActivity extends Activity {
 						sendBtn.setEnabled(true);
 						messages.add(new Message(account, sendText.getText().toString(), new Personne(withNom, withId)));
 						((BaseAdapter)lv.getAdapter()).notifyDataSetChanged();
+						lv.smoothScrollToPosition(messages.size()-1);
 						sendText.setText("");
 					}
 				}.execute(new Void[]{});

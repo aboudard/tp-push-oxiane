@@ -46,6 +46,7 @@ public class MainActivity extends Activity {
 	public static final String PROPERTY_REG_ID = "registration_id";
 	private static final String PROPERTY_APP_VERSION = "appVersion";
 	private static final String BASE_URL = "http://oxiane.com/google-push";
+	private final String SCOPES = "oauth2:https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://sites.google.com/feeds/";
 	private static final int CHOOSE_ACCOUNT = 45;
 	private String regid;
 	private GoogleCloudMessaging gcm;
@@ -98,8 +99,14 @@ public class MainActivity extends Activity {
 	}
 	private void showList() {
 		final ListView lv = (ListView)findViewById(R.id.list);
+		
+		
 		if(lv!=null)
 		{
+			TextView empty = new TextView(this);
+			empty.setText("Pas de contacts disponibles");
+			empty.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, android.R.drawable.gallery_thumb);
+			lv.setEmptyView(empty);
 		lv.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -109,6 +116,7 @@ public class MainActivity extends Activity {
 				i.putExtra("withName", p.getNom());
 				i.putExtra("withID", p.getRegId());
 				i.putExtra("account", accountName);
+				i.putExtra("regid", regid);
 				startActivity(i);
 				
 			}
@@ -154,7 +162,8 @@ public class MainActivity extends Activity {
 					    			  Personne p;
 					    			  if(indexOf > -1)
 					    			  {
-					    				  Date d = new SimpleDateFormat("", Locale.FRANCE).parse(s.substring(indexOf+2));
+					    				  //"2014-11-20 11:49:59" 
+					    				  Date d = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.FRANCE).parse(s.substring(indexOf+2));
 					    				  p = new Personne(nom, s);
 					    				  p.setLastOnline(d);
 					    			  }
@@ -283,7 +292,7 @@ public class MainActivity extends Activity {
 		    }
 		}
 	}
-	private final String SCOPES = "oauth2:https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://sites.google.com/feeds/";
+	
 	
 	public void showAccount()
 	{

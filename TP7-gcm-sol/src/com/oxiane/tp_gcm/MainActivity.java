@@ -362,7 +362,7 @@ public class MainActivity extends Activity {
 		String manufacturer = Build.MANUFACTURER;
 		String deviceName = Build.MODEL;
 		final String res = Utils.executeHttpGet(BASE_URL + "/register.php?id="
-				+ regid + "&nom=" + accountName+"&device="+URLEncoder.encode(manufacturer + deviceName));
+				+ regid + "&nom=" + accountName+"&device="+(manufacturer + deviceName).replaceAll(" ", ""));
 		MainActivity.this.runOnUiThread(new Runnable() {
 
 			@Override

@@ -125,7 +125,7 @@ public class ConversationActivity extends Activity {
 
 					@Override
 					protected String doInBackground(Void... params) {
-						return Utils.sendMessage(sendText.getText().toString(), myRegId, withId);
+						return Utils.sendMessage(sendText.getText().toString(), myRegId, withNom);
 					}
 					@Override
 					protected void onPostExecute(String result) {

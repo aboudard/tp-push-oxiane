@@ -57,7 +57,7 @@ public class Utils {
             }
         }
     }
-	public static String sendMessage(String message, String from, String destRegid) {
+	public static String sendMessage(String message, String from, String nomDestinataire) {
 	    // Create a new HttpClient and Post Header
 	    HttpClient httpclient = new DefaultHttpClient();
 	    HttpPost httppost = new HttpPost("http://oxiane.com/google-push/sendmessage.php");
@@ -67,7 +67,7 @@ public class Utils {
 	        List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
 	        nameValuePairs.add(new BasicNameValuePair("from", from));
 	        nameValuePairs.add(new BasicNameValuePair("message", message));
-	        nameValuePairs.add(new BasicNameValuePair("id[0]", destRegid));
+	        nameValuePairs.add(new BasicNameValuePair("nom[0]", nomDestinataire));
 	        nameValuePairs.add(new BasicNameValuePair("submit", "Send"));
 	        
 	        httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
